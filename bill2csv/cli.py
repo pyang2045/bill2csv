@@ -72,6 +72,13 @@ Examples:
     )
     
     parser.add_argument(
+        "--categories-file",
+        type=str,
+        default=None,
+        help="Path to custom expense categories file (default: expense_categories.md)",
+    )
+    
+    parser.add_argument(
         "--version",
         action="version",
         version=f"%(prog)s {__version__}",

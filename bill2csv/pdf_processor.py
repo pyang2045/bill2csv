@@ -8,7 +8,7 @@ import time
 class GeminiProcessor:
     """Process PDF files using Gemini 2.5 Flash API"""
     
-    # Prompt v3 with Category column
+    # Prompt v3 with hierarchical Category column
     PROMPT_V2 = """You read the attached multi-page bill PDF and extract ONLY the EXPENSE DETAIL TABLE(S).
 Ignore dashboards, charts/graphs, summaries, totals, advertisements, and cover pages.
 
@@ -29,18 +29,16 @@ Normalization:
 - Amount: signed decimal with '.' decimal separator; no thousands separators
   * Outflows/charges: NEGATIVE (e.g., -120.50)
   * Inflows/payments/credits/refunds: POSITIVE (e.g., 120.50)
-- Category: one of the following standard categories:
-  * Food & Dining
-  * Transportation
-  * Shopping
-  * Entertainment
-  * Bills & Utilities
-  * Healthcare
-  * Education
-  * Travel
-  * Fees & Charges
-  * Income/Credit
-  * Other
+- Category: Use hierarchical categorization with > separator. Examples:
+  * For main categories: "Food & Dining", "Transportation", "Shopping"
+  * For sub-categories: "Food & Dining > Restaurants", "Transportation > Gas & Fuel"
+  * Common categories include:
+    - Personal: Food & Dining, Transportation, Shopping, Entertainment, Health & Wellness
+    - Home: Housing, Utilities, Maintenance
+    - Financial: Banking, Credit Cards, Insurance
+    - Business: Office, Professional, Marketing
+    - Income: Salary, Refunds, Credits
+    - Other: Uncategorized, Cash Withdrawal, Transfers
 
 Scope:
 - Extract ALL rows from the expense detail table(s) across ALL pages.

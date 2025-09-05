@@ -6,7 +6,8 @@ Convert PDF bills to CSV format using Google's Gemini 2.5 Flash API.
 
 - Extracts expense detail tables from multi-page PDF bills
 - Outputs structured CSV with Date, Description, Amount, and Category columns
-- Intelligent categorization of transactions (Food & Dining, Transportation, Shopping, etc.)
+- Hierarchical categorization support (e.g., "Food & Dining > Restaurants")
+- Customizable categories via external markdown file
 - Secure API key management via macOS Keychain or environment variables
 - Validates and normalizes data (dates, amounts, descriptions, categories)
 - Isolates invalid rows in separate error file
@@ -55,6 +56,9 @@ bill2csv invoice.pdf --strict
 
 # Quiet mode (suppress logs)
 bill2csv invoice.pdf --quiet
+
+# Use custom categories file
+bill2csv invoice.pdf --categories-file ~/my_categories.md
 ```
 
 ## Output Format
@@ -63,7 +67,9 @@ bill2csv invoice.pdf --quiet
 - **Date**: DD-MM-YYYY format (e.g., 13-06-2018)
 - **Description**: Transaction description (quoted if contains commas)
 - **Amount**: Decimal with sign (negative for charges, positive for credits)
-- **Category**: Automatically categorized (e.g., Food & Dining, Transportation, Shopping, etc.)
+- **Category**: Hierarchical categories with > separator
+  - Main level: `Food & Dining`, `Transportation`, `Shopping`
+  - Sub-categories: `Food & Dining > Restaurants`, `Transportation > Gas & Fuel`
 
 ### Files Generated
 - `<filename>.csv` - Main output with valid rows
@@ -75,6 +81,32 @@ bill2csv invoice.pdf --quiet
 - Python 3.9+
 - macOS (for Keychain support)
 - Gemini API key
+
+## Customizing Categories
+
+The tool uses hierarchical categories defined in `expense_categories.md`. You can:
+
+1. Edit the default file in the project directory
+2. Create your own categories file and specify it with `--categories-file`
+3. Place a custom file at `~/.bill2csv/expense_categories.md`
+
+### Category File Format
+
+Categories are defined in markdown with indentation indicating hierarchy:
+
+```markdown
+## Personal Expenses
+- Food & Dining
+  - Restaurants
+  - Groceries
+  - Coffee Shops
+- Transportation
+  - Gas & Fuel
+  - Public Transit
+  - Rideshare & Taxi
+```
+
+In CSV output, sub-categories appear as: `Food & Dining > Restaurants`
 
 ## License
 

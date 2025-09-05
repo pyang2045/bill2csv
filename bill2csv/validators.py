@@ -166,29 +166,109 @@ class DescriptionValidator:
 
 
 class CategoryValidator:
-    """Validates and normalizes category strings"""
+    """Validates and normalizes category strings with hierarchical support"""
     
-    VALID_CATEGORIES = [
-        "Food & Dining",
-        "Transportation", 
-        "Shopping",
-        "Entertainment",
-        "Bills & Utilities",
-        "Healthcare",
-        "Education",
-        "Travel",
-        "Fees & Charges",
-        "Income/Credit",
-        "Other"
-    ]
+    _categories = None
+    _categories_file = None
+    _custom_categories_file = None
+    
+    @classmethod
+    def set_categories_file(cls, file_path):
+        """Set a custom categories file path"""
+        if file_path:
+            cls._custom_categories_file = Path(file_path)
+            cls._categories = None  # Force reload
+    
+    @classmethod
+    def _load_categories(cls):
+        """Load categories from expense_categories.md file"""
+        if cls._categories is not None:
+            return cls._categories
+        
+        cls._categories = set()
+        
+        # Try to find the categories file
+        from pathlib import Path
+        import os
+        
+        # Look for expense_categories.md in various locations
+        possible_paths = []
+        
+        # First check if custom file is specified
+        if cls._custom_categories_file:
+            possible_paths.append(cls._custom_categories_file)
+        
+        # Then check default locations
+        possible_paths.extend([
+            Path(__file__).parent.parent / "expense_categories.md",
+            Path(os.getcwd()) / "expense_categories.md",
+            Path.home() / ".bill2csv" / "expense_categories.md",
+        ])
+        
+        categories_content = None
+        for path in possible_paths:
+            if path.exists():
+                cls._categories_file = path
+                with open(path, 'r', encoding='utf-8') as f:
+                    categories_content = f.read()
+                break
+        
+        if not categories_content:
+            # Fallback to default categories if file not found
+            cls._categories = {
+                "Food & Dining",
+                "Transportation", 
+                "Shopping",
+                "Entertainment",
+                "Home & Utilities",
+                "Financial",
+                "Travel",
+                "Business",
+                "Education",
+                "Income",
+                "Other"
+            }
+            return cls._categories
+        
+        # Parse the markdown file
+        current_main = None
+        current_sub = None
+        
+        for line in categories_content.split('\n'):
+            line = line.strip()
+            
+            if line.startswith('## '):
+                # Main section header (not a category itself)
+                continue
+            elif line.startswith('- '):
+                # Category (could be main or sub)
+                category = line[2:].strip()
+                indent_level = len(line) - len(line.lstrip())
+                
+                if indent_level == 0:  # Main category
+                    current_main = category
+                    current_sub = None
+                    cls._categories.add(category)
+                elif current_main:  # Sub-category
+                    # Add both the sub-category alone and with hierarchy
+                    cls._categories.add(category)
+                    cls._categories.add(f"{current_main} > {category}")
+                    
+                    # For third-level categories
+                    if indent_level > 2:
+                        current_sub = category
+                    elif current_sub:
+                        cls._categories.add(f"{current_main} > {current_sub} > {category}")
+        
+        return cls._categories
     
     @classmethod
     def validate_and_normalize(cls, category_str: str) -> str:
         """
-        Validate and normalize category
+        Validate and normalize category with hierarchical support
         
         Args:
-            category_str: Input category string
+            category_str: Input category string (can be hierarchical with >)
             
         Returns:
             Normalized category string
@@ -197,18 +277,33 @@ class CategoryValidator:
             ValidationError: If category is invalid
         """
         if not category_str or not category_str.strip():
-            # Category is optional, return "Other" as default
-            return "Other"
+            # Category is optional, return "Other > Uncategorized" as default
+            return "Other > Uncategorized"
         
         category_str = category_str.strip()
         
-        # Check if it's a valid category (case-insensitive)
-        for valid_cat in cls.VALID_CATEGORIES:
+        # Load categories if not already loaded
+        valid_categories = cls._load_categories()
+        
+        # Check exact match (case-insensitive)
+        for valid_cat in valid_categories:
             if category_str.lower() == valid_cat.lower():
                 return valid_cat
         
-        # If not in valid categories, default to "Other"
-        return "Other"
+        # Check if it's a hierarchical category with different formatting
+        # e.g., "Food/Dining" or "Food - Dining" should match "Food & Dining"
+        normalized = category_str.replace('/', ' > ').replace(' - ', ' > ').replace(' & ', ' > ')
+        for valid_cat in valid_categories:
+            if normalized.lower() == valid_cat.lower():
+                return valid_cat
+        
+        # If not in valid categories, default to "Other > Uncategorized"
+        return "Other > Uncategorized"
+    
+    @classmethod
+    def get_all_categories(cls):
+        """Get all valid categories for reference"""
+        return sorted(cls._load_categories())
 
 
 class RowValidator:

@@ -9,7 +9,7 @@ from .cli import parse_args
 from .api_key import APIKeyManager
 from .pdf_processor import GeminiProcessor
 from .csv_cleaner import CSVCleaner
-from .validators import RowValidator
+from .validators import RowValidator, CategoryValidator
 from .output import OutputManager
 from .utils import ConsoleLogger, get_file_info
 
@@ -22,6 +22,11 @@ def main():
         
         # Initialize logger
         logger = ConsoleLogger(quiet=args.quiet)
+        
+        # Set custom categories file if provided
+        if args.categories_file:
+            CategoryValidator.set_categories_file(args.categories_file)
+            logger.progress(f"Using categories file: {args.categories_file}")
         
         # Get file info
         file_info = get_file_info(args.pdf_path)

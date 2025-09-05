@@ -14,12 +14,15 @@ PDFs and extracts **expense detail tables**.
 
 **Output CSV schema:**
 
-    Date,Description,Amount,Category
+    Date,Description,Payee,Amount,Category
 
 -   **Date:** `DD-MM-YYYY` (numeric, e.g., `13-06-2018`)\
 -   **Description:** cleaned text with symbols replaced by spaces, one line, quotes if commas present\
     -   Symbols like #, *, @, &, /, _, etc. replaced with spaces
     -   Example: `WALMART#1234` becomes `WALMART 1234`\
+-   **Payee:** extracted merchant/vendor name from description\
+    -   Simplified, clean merchant name
+    -   Example: `WALMART#1234*STORE` becomes `Walmart`\
 -   **Amount:** signed decimal with `.` separator
     -   Charges/expenses: negative\
     -   Payments/credits/refunds: positive

@@ -8,18 +8,19 @@ import time
 class GeminiProcessor:
     """Process PDF files using Gemini 2.5 Flash API"""
     
-    # Prompt v3 with hierarchical Category column
+    # Prompt v4 with Payee and hierarchical Category columns
     PROMPT_V2 = """You read the attached multi-page bill PDF and extract ONLY the EXPENSE DETAIL TABLE(S).
 Ignore dashboards, charts/graphs, summaries, totals, advertisements, and cover pages.
 
 Output ONLY raw CSV with this exact header:
-Date,Description,Amount,Category
+Date,Description,Payee,Amount,Category
 
 Mapping rules:
 - Identify rows representing itemized expenses/charges or payments/credits.
 - Column mapping:
   * Date: posting date or transaction date for each row
-  * Description: the row's textual label (e.g., merchant/item/service period)
+  * Description: the full transaction description/details as shown in the bill
+  * Payee: extract the merchant/vendor/payee name from the description (clean, simplified name)
   * Amount: numeric value for the row
   * Category: intelligently categorize based on the description and context
 
@@ -28,7 +29,16 @@ Normalization:
 - Description: clean text with spaces instead of symbols; one line; if it contains commas, quote the field
   * Replace symbols like *, #, @, &, /, \\, |, <, >, ~, `, ^, _, +, =, [, ], {, } with spaces
   * Keep letters, numbers, and basic punctuation (. , ; : ' " ( ))
-  * Example: "WALMART#1234" becomes "WALMART 1234", "7-ELEVEN_STORE" becomes "7 ELEVEN STORE"
+  * Example: "WALMART#1234*STORE" becomes "WALMART 1234 STORE", "7-ELEVEN_STORE" becomes "7 ELEVEN STORE"
+- Payee: extract and simplify the merchant/vendor name from description
+  * Remove store numbers, transaction codes, and extra details
+  * Examples:
+    - "WALMART#1234*STORE" → "Walmart"
+    - "7-ELEVEN_STORE#567" → "7-Eleven"
+    - "AMZ*MKTP US*2Y4T85TN2" → "Amazon Marketplace"
+    - "PAYPAL *EBAY_SELLER" → "PayPal"
+    - "STARBUCKS STORE #12345" → "Starbucks"
+    - "TST* DOORDASH" → "DoorDash"
 - Amount: signed decimal with '.' decimal separator; no thousands separators
   * Outflows/charges: NEGATIVE (e.g., -120.50)
   * Inflows/payments/credits/refunds: POSITIVE (e.g., 120.50)
@@ -53,7 +63,7 @@ Constraints:
 - Output only CSV text. No explanations, no markdown, no code fences, no extra columns.
 
 Header example:
-Date,Description,Amount,Category"""
+Date,Description,Payee,Amount,Category"""
 
     def __init__(self, api_key: str):
         """

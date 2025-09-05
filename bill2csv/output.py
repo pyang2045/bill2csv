@@ -38,11 +38,22 @@ class OutputManager:
         Args:
             rows: List of validated row dictionaries
         """
-        # Determine fieldnames based on whether Category is present
-        if rows and "Category" in rows[0]:
-            fieldnames = ["Date", "Description", "Amount", "Category"]
+        # Determine fieldnames based on which optional columns are present
+        fieldnames = ["Date", "Description"]
+        
+        if rows:
+            # Check for Payee column
+            if "Payee" in rows[0]:
+                fieldnames.append("Payee")
+            
+            fieldnames.append("Amount")
+            
+            # Check for Category column
+            if "Category" in rows[0]:
+                fieldnames.append("Category")
         else:
-            fieldnames = ["Date", "Description", "Amount"]
+            # Default order if no rows
+            fieldnames = ["Date", "Description", "Payee", "Amount", "Category"]
         
         with open(self.csv_path, 'w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -67,8 +78,13 @@ class OutputManager:
                 raw_fields = [
                     error["raw"].get("Date", ""),
                     error["raw"].get("Description", ""),
-                    error["raw"].get("Amount", "")
                 ]
+                # Include Payee if present
+                if "Payee" in error["raw"]:
+                    raw_fields.append(error["raw"].get("Payee", ""))
+                
+                raw_fields.append(error["raw"].get("Amount", ""))
+                
                 # Include Category if present
                 if "Category" in error["raw"]:
                     raw_fields.append(error["raw"].get("Category", ""))

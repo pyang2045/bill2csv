@@ -50,11 +50,15 @@ class CSVCleaner:
             if not line:
                 continue
             
-            # Look for header line (now with Category)
+            # Look for header line (now with Payee and Category)
             if not header_found:
                 if "Date" in line and "Description" in line and "Amount" in line:
-                    # Check if Category is included
-                    if "Category" in line:
+                    # Check which optional columns are included
+                    if "Payee" in line and "Category" in line:
+                        cleaned_lines.append("Date,Description,Payee,Amount,Category")
+                    elif "Payee" in line:
+                        cleaned_lines.append("Date,Description,Payee,Amount")
+                    elif "Category" in line:
                         cleaned_lines.append("Date,Description,Amount,Category")
                     else:
                         cleaned_lines.append("Date,Description,Amount")
@@ -70,7 +74,11 @@ class CSVCleaner:
             for i, line in enumerate(lines):
                 if "Date" in line and "Description" in line and "Amount" in line:
                     # Found header, use everything from this point
-                    if "Category" in line:
+                    if "Payee" in line and "Category" in line:
+                        cleaned_lines = ["Date,Description,Payee,Amount,Category"]
+                    elif "Payee" in line:
+                        cleaned_lines = ["Date,Description,Payee,Amount"]
+                    elif "Category" in line:
                         cleaned_lines = ["Date,Description,Amount,Category"]
                     else:
                         cleaned_lines = ["Date,Description,Amount"]
@@ -107,7 +115,8 @@ class CSVCleaner:
                 
                 # Map various possible field names to standard names
                 date_keys = ["Date", "date", "DATE", "Transaction Date", "Posting Date"]
-                desc_keys = ["Description", "description", "DESC", "Details", "Merchant"]
+                desc_keys = ["Description", "description", "DESC", "Details", "Transaction"]
+                payee_keys = ["Payee", "payee", "Merchant", "Vendor", "Company"]
                 amount_keys = ["Amount", "amount", "AMT", "Total", "Value"]
                 category_keys = ["Category", "category", "CAT", "Type", "Classification"]
                 
@@ -121,6 +130,12 @@ class CSVCleaner:
                 for key in desc_keys:
                     if key in row:
                         normalized_row["Description"] = row[key]
+                        break
+                
+                # Find and map Payee (optional)
+                for key in payee_keys:
+                    if key in row:
+                        normalized_row["Payee"] = row[key]
                         break
                 
                 # Find and map Amount

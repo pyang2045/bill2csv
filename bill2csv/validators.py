@@ -177,6 +177,84 @@ class DescriptionValidator:
         return desc_str.strip()
 
 
+class PayeeValidator:
+    """Validates and normalizes payee/merchant names"""
+    
+    @staticmethod
+    def validate_and_normalize(payee_str: str) -> str:
+        """
+        Normalize payee/merchant name
+        
+        - Clean up formatting
+        - Remove extra whitespace
+        - Proper capitalization
+        - Quote if contains commas
+        
+        Args:
+            payee_str: Input payee string
+            
+        Returns:
+            Normalized payee string
+            
+        Raises:
+            ValidationError: If payee is invalid
+        """
+        if not payee_str or not payee_str.strip():
+            # Payee can be empty
+            return ""
+        
+        import re
+        
+        # Clean up the payee name
+        payee_str = payee_str.strip()
+        
+        # Remove extra whitespace
+        payee_str = " ".join(payee_str.split())
+        
+        # Handle common prefixes/suffixes
+        # Remove TST*, SQ *, etc.
+        payee_str = re.sub(r'^(TST\*|SQ\s*\*|SP\s*\*)\s*', '', payee_str, flags=re.IGNORECASE)
+        
+        # Remove trailing store numbers like #1234
+        payee_str = re.sub(r'\s*#\d+$', '', payee_str)
+        
+        # Remove trailing transaction IDs
+        payee_str = re.sub(r'\s*\*[A-Z0-9]+$', '', payee_str)
+        
+        # Proper case for known companies (customize as needed)
+        known_companies = {
+            'walmart': 'Walmart',
+            'amazon': 'Amazon',
+            'paypal': 'PayPal',
+            'ebay': 'eBay',
+            'uber': 'Uber',
+            'lyft': 'Lyft',
+            'doordash': 'DoorDash',
+            'grubhub': 'GrubHub',
+            'starbucks': 'Starbucks',
+            'mcdonalds': "McDonald's",
+            'target': 'Target',
+            'costco': 'Costco',
+            '7-eleven': '7-Eleven',
+            '7 eleven': '7-Eleven',
+        }
+        
+        # Check if it matches a known company (case-insensitive)
+        lower_payee = payee_str.lower()
+        for pattern, proper_name in known_companies.items():
+            if pattern in lower_payee:
+                payee_str = proper_name
+                break
+        
+        # Quote if contains commas
+        if "," in payee_str:
+            # Escape any existing quotes
+            payee_str = payee_str.replace('"', '""')
+            payee_str = f'"{payee_str}"'
+        
+        return payee_str
+
+
 class CategoryValidator:
     """Validates and normalizes category strings with hierarchical support"""
     
@@ -325,6 +403,7 @@ class RowValidator:
         self.date_validator = DateValidator()
         self.amount_validator = AmountValidator()
         self.description_validator = DescriptionValidator()
+        self.payee_validator = PayeeValidator()
         self.category_validator = CategoryValidator()
     
     def validate_row(self, row: Dict[str, str]) -> Tuple[bool, Optional[str], Dict[str, str]]:
@@ -332,7 +411,7 @@ class RowValidator:
         Validate a complete CSV row
         
         Args:
-            row: Dictionary with Date, Description, Amount, and optionally Category keys
+            row: Dictionary with Date, Description, Amount, and optionally Payee and Category keys
             
         Returns:
             Tuple of (is_valid, error_message, normalized_row)
@@ -362,6 +441,13 @@ class RowValidator:
             normalized["Amount"] = self.amount_validator.validate_and_normalize(row["Amount"])
         except ValidationError as e:
             return False, f"Amount error: {e}", row
+        
+        # Validate Payee (optional field)
+        if "Payee" in row:
+            try:
+                normalized["Payee"] = self.payee_validator.validate_and_normalize(row["Payee"])
+            except ValidationError as e:
+                return False, f"Payee error: {e}", row
         
         # Validate Category (optional field)
         if "Category" in row:

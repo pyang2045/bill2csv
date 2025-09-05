@@ -17,7 +17,9 @@ PDFs and extracts **expense detail tables**.
     Date,Description,Amount,Category
 
 -   **Date:** `DD-MM-YYYY` (numeric, e.g., `13-06-2018`)\
--   **Description:** text, one line, quotes if commas present\
+-   **Description:** cleaned text with symbols replaced by spaces, one line, quotes if commas present\
+    -   Symbols like #, *, @, &, /, _, etc. replaced with spaces
+    -   Example: `WALMART#1234` becomes `WALMART 1234`\
 -   **Amount:** signed decimal with `.` separator
     -   Charges/expenses: negative\
     -   Payments/credits/refunds: positive

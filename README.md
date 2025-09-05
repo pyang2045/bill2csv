@@ -65,7 +65,10 @@ bill2csv invoice.pdf --categories-file ~/my_categories.md
 
 ### CSV Output
 - **Date**: DD-MM-YYYY format (e.g., 13-06-2018)
-- **Description**: Transaction description (quoted if contains commas)
+- **Description**: Cleaned transaction description with symbols replaced by spaces
+  - Example: `WALMART#1234` → `WALMART 1234`
+  - Example: `7-ELEVEN_STORE` → `7 ELEVEN STORE`
+  - Quoted if contains commas
 - **Amount**: Decimal with sign (negative for charges, positive for credits)
 - **Category**: Hierarchical categories with > separator
   - Main level: `Food & Dining`, `Transportation`, `Shopping`

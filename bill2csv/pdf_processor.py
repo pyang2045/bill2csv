@@ -25,7 +25,10 @@ Mapping rules:
 
 Normalization:
 - Date: DD-MM-YYYY (numeric day-month-year, e.g., 13-06-2018)
-- Description: one line; if it contains commas, quote the field
+- Description: clean text with spaces instead of symbols; one line; if it contains commas, quote the field
+  * Replace symbols like *, #, @, &, /, \\, |, <, >, ~, `, ^, _, +, =, [, ], {, } with spaces
+  * Keep letters, numbers, and basic punctuation (. , ; : ' " ( ))
+  * Example: "WALMART#1234" becomes "WALMART 1234", "7-ELEVEN_STORE" becomes "7 ELEVEN STORE"
 - Amount: signed decimal with '.' decimal separator; no thousands separators
   * Outflows/charges: NEGATIVE (e.g., -120.50)
   * Inflows/payments/credits/refunds: POSITIVE (e.g., 120.50)

@@ -134,6 +134,7 @@ class DescriptionValidator:
         """
         Normalize description text
         
+        - Replace common symbols with spaces
         - Collapse whitespace
         - Ensure single line
         - Quote if contains commas
@@ -150,11 +151,22 @@ class DescriptionValidator:
         if not desc_str or not desc_str.strip():
             raise ValidationError("Description cannot be empty")
         
+        # Replace common symbols with spaces
+        # Keep alphanumeric, spaces, and some punctuation
+        import re
+        # Replace multiple symbols with space
+        desc_str = re.sub(r'[*#@&/\\|<>~`^_+=\[\]{}]', ' ', desc_str)
+        # Replace multiple dashes/underscores with single space
+        desc_str = re.sub(r'[-_]+', ' ', desc_str)
+        
         # Collapse whitespace and ensure single line
         desc_str = " ".join(desc_str.split())
         
         # Remove any newlines or carriage returns
         desc_str = desc_str.replace("\n", " ").replace("\r", " ")
+        
+        # Final cleanup of multiple spaces
+        desc_str = re.sub(r'\s+', ' ', desc_str)  # Collapse multiple spaces
         
         # Quote if contains commas
         if "," in desc_str:
@@ -162,7 +174,7 @@ class DescriptionValidator:
             desc_str = desc_str.replace('"', '""')
             desc_str = f'"{desc_str}"'
         
-        return desc_str
+        return desc_str.strip()
 
 
 class CategoryValidator:

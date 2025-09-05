@@ -50,10 +50,14 @@ class CSVCleaner:
             if not line:
                 continue
             
-            # Look for header line
+            # Look for header line (now with Category)
             if not header_found:
-                if line == "Date,Description,Amount" or line.lower() == "date,description,amount":
-                    cleaned_lines.append("Date,Description,Amount")
+                if "Date" in line and "Description" in line and "Amount" in line:
+                    # Check if Category is included
+                    if "Category" in line:
+                        cleaned_lines.append("Date,Description,Amount,Category")
+                    else:
+                        cleaned_lines.append("Date,Description,Amount")
                     header_found = True
             else:
                 # Add data lines after header
@@ -66,7 +70,10 @@ class CSVCleaner:
             for i, line in enumerate(lines):
                 if "Date" in line and "Description" in line and "Amount" in line:
                     # Found header, use everything from this point
-                    cleaned_lines = ["Date,Description,Amount"]
+                    if "Category" in line:
+                        cleaned_lines = ["Date,Description,Amount,Category"]
+                    else:
+                        cleaned_lines = ["Date,Description,Amount"]
                     cleaned_lines.extend(lines[i+1:])
                     header_found = True
                     break
@@ -85,7 +92,7 @@ class CSVCleaner:
             csv_text: Cleaned CSV string with header
             
         Returns:
-            List of dictionaries with Date, Description, Amount keys
+            List of dictionaries with Date, Description, Amount, and optionally Category keys
             
         Raises:
             ValueError: If CSV parsing fails
@@ -102,6 +109,7 @@ class CSVCleaner:
                 date_keys = ["Date", "date", "DATE", "Transaction Date", "Posting Date"]
                 desc_keys = ["Description", "description", "DESC", "Details", "Merchant"]
                 amount_keys = ["Amount", "amount", "AMT", "Total", "Value"]
+                category_keys = ["Category", "category", "CAT", "Type", "Classification"]
                 
                 # Find and map Date
                 for key in date_keys:
@@ -119,6 +127,12 @@ class CSVCleaner:
                 for key in amount_keys:
                     if key in row:
                         normalized_row["Amount"] = row[key]
+                        break
+                
+                # Find and map Category (optional)
+                for key in category_keys:
+                    if key in row:
+                        normalized_row["Category"] = row[key]
                         break
                 
                 # Only add if we have all required fields

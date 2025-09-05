@@ -14,13 +14,17 @@ PDFs and extracts **expense detail tables**.
 
 **Output CSV schema:**
 
-    Date,Description,Amount
+    Date,Description,Amount,Category
 
 -   **Date:** `DD-MM-YYYY` (numeric, e.g., `13-06-2018`)\
 -   **Description:** text, one line, quotes if commas present\
 -   **Amount:** signed decimal with `.` separator
     -   Charges/expenses: negative\
     -   Payments/credits/refunds: positive
+-   **Category:** Intelligent categorization of transactions
+    -   Possible values: Food & Dining, Transportation, Shopping, Entertainment, 
+        Bills & Utilities, Healthcare, Education, Travel, Fees & Charges, 
+        Income/Credit, Other
 
 ------------------------------------------------------------------------
 
@@ -110,7 +114,7 @@ PDFs and extracts **expense detail tables**.
 
 ------------------------------------------------------------------------
 
-## 5. Gemini Prompt (v2 -- Table Focused)
+## 5. Gemini Prompt (v3 -- Table Focused with Category)
 
 Send PDF + this text:
 
@@ -118,14 +122,15 @@ Send PDF + this text:
     Ignore dashboards, charts/graphs, summaries, totals, advertisements, and cover pages.
 
     Output ONLY raw CSV with this exact header:
-    Date,Description,Amount
+    Date,Description,Amount,Category
 
     Mapping rules:
     - Identify rows representing itemized expenses/charges or payments/credits.
     - Column mapping:
       * Date: posting date or transaction date for each row
-      * Description: the row’s textual label (e.g., merchant/item/service period)
+      * Description: the row's textual label (e.g., merchant/item/service period)
       * Amount: numeric value for the row
+      * Category: intelligently categorize based on the description and context
 
     Normalization:
     - Date: DD-MM-YYYY (numeric day-month-year, e.g., 13-06-2018)
@@ -133,6 +138,18 @@ Send PDF + this text:
     - Amount: signed decimal with '.' decimal separator; no thousands separators
       * Outflows/charges: NEGATIVE (e.g., -120.50)
       * Inflows/payments/credits/refunds: POSITIVE (e.g., 120.50)
+    - Category: one of the following standard categories:
+      * Food & Dining
+      * Transportation
+      * Shopping
+      * Entertainment
+      * Bills & Utilities
+      * Healthcare
+      * Education
+      * Travel
+      * Fees & Charges
+      * Income/Credit
+      * Other
 
     Scope:
     - Extract ALL rows from the expense detail table(s) across ALL pages.
@@ -144,7 +161,7 @@ Send PDF + this text:
     - Output only CSV text. No explanations, no markdown, no code fences, no extra columns.
 
     Header example:
-    Date,Description,Amount
+    Date,Description,Amount,Category
 
 ------------------------------------------------------------------------
 
@@ -174,10 +191,11 @@ Send PDF + this text:
 
 ## 7. Validation Rules
 
--   **Header**: exactly `Date,Description,Amount`.\
+-   **Header**: exactly `Date,Description,Amount,Category`.\
 -   **Date**: must be convertible to `DD-MM-YYYY`.\
 -   **Description**: non-empty, single line, quoted if contains commas.\
 -   **Amount**: regex `^-?\d+(\.\d+)?$`, with sign convention applied.
+-   **Category**: must be one of the predefined categories or "Other".
 
 ------------------------------------------------------------------------
 

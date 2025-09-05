@@ -7,7 +7,7 @@ from .cli import parse_args
 from .api_key import APIKeyManager
 from .pdf_processor import GeminiProcessor
 from .csv_cleaner import CSVCleaner
-from .validators import DateValidator, AmountValidator, DescriptionValidator, RowValidator
+from .validators import DateValidator, AmountValidator, DescriptionValidator, CategoryValidator, RowValidator
 from .output import OutputManager
 from .utils import ConsoleLogger
 
@@ -19,6 +19,7 @@ __all__ = [
     "DateValidator",
     "AmountValidator",
     "DescriptionValidator",
+    "CategoryValidator",
     "RowValidator",
     "OutputManager",
     "ConsoleLogger",

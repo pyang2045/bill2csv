@@ -165,6 +165,52 @@ class DescriptionValidator:
         return desc_str
 
 
+class CategoryValidator:
+    """Validates and normalizes category strings"""
+    
+    VALID_CATEGORIES = [
+        "Food & Dining",
+        "Transportation", 
+        "Shopping",
+        "Entertainment",
+        "Bills & Utilities",
+        "Healthcare",
+        "Education",
+        "Travel",
+        "Fees & Charges",
+        "Income/Credit",
+        "Other"
+    ]
+    
+    @classmethod
+    def validate_and_normalize(cls, category_str: str) -> str:
+        """
+        Validate and normalize category
+        
+        Args:
+            category_str: Input category string
+            
+        Returns:
+            Normalized category string
+            
+        Raises:
+            ValidationError: If category is invalid
+        """
+        if not category_str or not category_str.strip():
+            # Category is optional, return "Other" as default
+            return "Other"
+        
+        category_str = category_str.strip()
+        
+        # Check if it's a valid category (case-insensitive)
+        for valid_cat in cls.VALID_CATEGORIES:
+            if category_str.lower() == valid_cat.lower():
+                return valid_cat
+        
+        # If not in valid categories, default to "Other"
+        return "Other"
+
+
 class RowValidator:
     """Validates complete CSV rows"""
     
@@ -172,13 +218,14 @@ class RowValidator:
         self.date_validator = DateValidator()
         self.amount_validator = AmountValidator()
         self.description_validator = DescriptionValidator()
+        self.category_validator = CategoryValidator()
     
     def validate_row(self, row: Dict[str, str]) -> Tuple[bool, Optional[str], Dict[str, str]]:
         """
         Validate a complete CSV row
         
         Args:
-            row: Dictionary with Date, Description, Amount keys
+            row: Dictionary with Date, Description, Amount, and optionally Category keys
             
         Returns:
             Tuple of (is_valid, error_message, normalized_row)
@@ -208,5 +255,12 @@ class RowValidator:
             normalized["Amount"] = self.amount_validator.validate_and_normalize(row["Amount"])
         except ValidationError as e:
             return False, f"Amount error: {e}", row
+        
+        # Validate Category (optional field)
+        if "Category" in row:
+            try:
+                normalized["Category"] = self.category_validator.validate_and_normalize(row["Category"])
+            except ValidationError as e:
+                return False, f"Category error: {e}", row
         
         return True, None, normalized

@@ -5,9 +5,10 @@ Convert PDF bills to CSV format using Google's Gemini 2.5 Flash API.
 ## Features
 
 - Extracts expense detail tables from multi-page PDF bills
-- Outputs structured CSV with Date, Description, and Amount columns
+- Outputs structured CSV with Date, Description, Amount, and Category columns
+- Intelligent categorization of transactions (Food & Dining, Transportation, Shopping, etc.)
 - Secure API key management via macOS Keychain or environment variables
-- Validates and normalizes data (dates, amounts, descriptions)
+- Validates and normalizes data (dates, amounts, descriptions, categories)
 - Isolates invalid rows in separate error file
 - Optional metadata generation
 
@@ -62,6 +63,7 @@ bill2csv invoice.pdf --quiet
 - **Date**: DD-MM-YYYY format (e.g., 13-06-2018)
 - **Description**: Transaction description (quoted if contains commas)
 - **Amount**: Decimal with sign (negative for charges, positive for credits)
+- **Category**: Automatically categorized (e.g., Food & Dining, Transportation, Shopping, etc.)
 
 ### Files Generated
 - `<filename>.csv` - Main output with valid rows

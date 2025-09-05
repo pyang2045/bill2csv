@@ -11,10 +11,11 @@ This is a command-line tool for macOS that converts PDF bills into CSV format us
 - Standard libraries: argparse, csv, json, datetime, re, subprocess
 
 ### CSV Output Format
-- Header: `Date,Description,Amount`
+- Header: `Date,Description,Amount,Category`
 - Date format: DD-MM-YYYY (e.g., 13-06-2018)
 - Amount: Negative for charges/expenses, positive for payments/credits
 - Description: Quoted if contains commas
+- Category: Intelligent categorization (Food & Dining, Transportation, Shopping, etc.)
 
 ### Core Components to Implement
 1. CLI argument parser with options for output directory, metadata, API key handling

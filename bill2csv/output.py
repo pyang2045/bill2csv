@@ -38,8 +38,14 @@ class OutputManager:
         Args:
             rows: List of validated row dictionaries
         """
+        # Determine fieldnames based on whether Category is present
+        if rows and "Category" in rows[0]:
+            fieldnames = ["Date", "Description", "Amount", "Category"]
+        else:
+            fieldnames = ["Date", "Description", "Amount"]
+        
         with open(self.csv_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=["Date", "Description", "Amount"])
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(rows)
     
@@ -58,11 +64,15 @@ class OutputManager:
             writer.writerow(["row", "reason", "raw"])
             
             for error in errors:
-                raw_str = ",".join([
+                raw_fields = [
                     error["raw"].get("Date", ""),
                     error["raw"].get("Description", ""),
                     error["raw"].get("Amount", "")
-                ])
+                ]
+                # Include Category if present
+                if "Category" in error["raw"]:
+                    raw_fields.append(error["raw"].get("Category", ""))
+                raw_str = ",".join(raw_fields)
                 writer.writerow([error["row"], error["reason"], raw_str])
     
     def write_metadata(self, 

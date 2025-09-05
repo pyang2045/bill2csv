@@ -8,12 +8,12 @@ import time
 class GeminiProcessor:
     """Process PDF files using Gemini 2.5 Flash API"""
     
-    # Exact prompt from specification v2
+    # Prompt v3 with Category column
     PROMPT_V2 = """You read the attached multi-page bill PDF and extract ONLY the EXPENSE DETAIL TABLE(S).
 Ignore dashboards, charts/graphs, summaries, totals, advertisements, and cover pages.
 
 Output ONLY raw CSV with this exact header:
-Date,Description,Amount
+Date,Description,Amount,Category
 
 Mapping rules:
 - Identify rows representing itemized expenses/charges or payments/credits.
@@ -21,6 +21,7 @@ Mapping rules:
   * Date: posting date or transaction date for each row
   * Description: the row's textual label (e.g., merchant/item/service period)
   * Amount: numeric value for the row
+  * Category: intelligently categorize based on the description and context
 
 Normalization:
 - Date: DD-MM-YYYY (numeric day-month-year, e.g., 13-06-2018)
@@ -28,6 +29,18 @@ Normalization:
 - Amount: signed decimal with '.' decimal separator; no thousands separators
   * Outflows/charges: NEGATIVE (e.g., -120.50)
   * Inflows/payments/credits/refunds: POSITIVE (e.g., 120.50)
+- Category: one of the following standard categories:
+  * Food & Dining
+  * Transportation
+  * Shopping
+  * Entertainment
+  * Bills & Utilities
+  * Healthcare
+  * Education
+  * Travel
+  * Fees & Charges
+  * Income/Credit
+  * Other
 
 Scope:
 - Extract ALL rows from the expense detail table(s) across ALL pages.
@@ -39,7 +52,7 @@ Constraints:
 - Output only CSV text. No explanations, no markdown, no code fences, no extra columns.
 
 Header example:
-Date,Description,Amount"""
+Date,Description,Amount,Category"""
 
     def __init__(self, api_key: str):
         """

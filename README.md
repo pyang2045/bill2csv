@@ -116,6 +116,12 @@ Categories are defined in markdown with indentation indicating hierarchy:
 
 In CSV output, sub-categories appear as: `Food & Dining > Restaurants`
 
+## Documentation
+
+- **[Design Document](DESIGN_DOCUMENT.md)** - Technical architecture and implementation details
+- **[Specification](bill2csv_spec.md)** - Original product requirements and specifications
+- **[Categories Configuration](expense_categories.md)** - Default expense category hierarchy
+
 ## License
 
 MIT

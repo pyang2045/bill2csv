@@ -20,16 +20,10 @@ Convert PDF bills to CSV format using Google's Gemini 2.5 Flash API for intellig
 
 ## Installation
 
-### From Source (Development)
 ```bash
-git clone https://github.com/yourusername/bill2csv.git
+git clone https://github.com/pyang2045/bill2csv.git
 cd bill2csv
 pip install -e .
-```
-
-### From PyPI (Coming Soon)
-```bash
-pip install bill2csv
 ```
 
 ## Setup

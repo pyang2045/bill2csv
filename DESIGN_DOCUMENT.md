@@ -116,9 +116,9 @@ parse_args(args=None) -> Namespace
 - Error handling
 
 **Key Configuration**:
-- Model: `gemini-2.0-flash-exp`
+- Model: `gemini-2.5-flash`
 - Temperature: 0.1 (for consistency)
-- Max tokens: 8192
+- Max tokens: 32768 (to handle larger bills)
 
 #### 4. CSV Cleaner (`csv_cleaner.py`)
 **Purpose**: Clean and parse API responses
@@ -202,6 +202,7 @@ DD-MM-YYYY,Text,Merchant,±Decimal,Category > Subcategory
 #### Date
 - **Format**: DD-MM-YYYY
 - **Example**: 13-06-2018
+- **Source Priority**: Transaction Date preferred (when purchase occurred), Posting Date as fallback
 - **Validation**: Multiple format support, normalized output
 
 #### Description
@@ -210,9 +211,15 @@ DD-MM-YYYY,Text,Merchant,±Decimal,Category > Subcategory
 - **Processing**: Remove #, *, @, &, /, \, etc.
 
 #### Payee
-- **Format**: Simplified merchant name
-- **Example**: "Walmart"
-- **Processing**: Remove store numbers, transaction IDs
+- **Format**: Merchant name preserving original language
+- **Examples**: 
+  - "Walmart" (English)
+  - "星巴克咖啡" (Chinese - Starbucks)
+  - "セブンイレブン" (Japanese - 7-Eleven)
+- **Processing**: 
+  - Preserve original language/script from description
+  - Remove store numbers, transaction IDs
+  - Keep native text for non-English merchants
 
 #### Amount
 - **Format**: Signed decimal
@@ -306,7 +313,12 @@ row,reason,raw
 - Clear error reporting
 
 #### Recovery Mechanisms
-- API retry logic
+- **API retry logic**:
+  - Max retries: 3 attempts
+  - Initial delay: 2 seconds
+  - Exponential backoff: 2x multiplier (up to 32 seconds)
+  - Jitter: Random 0-1 second added to prevent thundering herd
+  - Retryable errors: 503 (Service Unavailable), 429 (Rate Limit), 500 (Internal Error), 502 (Bad Gateway)
 - Alternative date format parsing
 - Fallback category assignment
 
@@ -331,7 +343,7 @@ row,reason,raw
 
 ### Scalability Limits
 - Single PDF processing (by design)
-- API token limits (8192)
+- API token limits (32768 for gemini-2.5-flash)
 - Local file system constraints
 
 ## Future Enhancements

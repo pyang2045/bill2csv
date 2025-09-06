@@ -105,7 +105,6 @@ Date,Description,Payee,Amount,Category"""
         
         # Look for expense_categories.md in various locations
         possible_paths = [
-            Path(__file__).parent.parent / "expense_categories.md",
             Path(os.getcwd()) / "expense_categories.md",
             Path.home() / ".bill2csv" / "expense_categories.md",
         ]

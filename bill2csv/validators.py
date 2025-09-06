@@ -290,7 +290,6 @@ class CategoryValidator:
         
         # Then check default locations
         possible_paths.extend([
-            Path(__file__).parent.parent / "expense_categories.md",
             Path(os.getcwd()) / "expense_categories.md",
             Path.home() / ".bill2csv" / "expense_categories.md",
         ])

@@ -1,6 +1,5 @@
 # Expense Categories
 
-## Personal Expenses
 - Food & Dining
   - Restaurants
   - Groceries
@@ -33,7 +32,6 @@
   - Personal Care
   - Health Insurance
 
-## Home & Utilities
 - Housing
   - Rent
   - Mortgage
@@ -51,7 +49,6 @@
   - Cleaning Services
   - Lawn & Garden
 
-## Financial
 - Banking
   - Service Fees
   - ATM Fees
@@ -68,7 +65,6 @@
   - Home Insurance
   - Other Insurance
 
-## Travel
 - Transportation
   - Flights
   - Hotels
@@ -83,7 +79,6 @@
   - Attractions
   - Dining
 
-## Business
 - Office
   - Supplies
   - Equipment
@@ -97,13 +92,11 @@
   - Promotions
   - Events
 
-## Education
 - Tuition
 - Books & Supplies
 - Courses & Training
 - Student Loans
 
-## Income
 - Salary
 - Freelance
 - Refunds
@@ -112,7 +105,6 @@
 - Dividends
 - Other Income
 
-## Other
 - Uncategorized
 - Cash Withdrawal
 - Transfers

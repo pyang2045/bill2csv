@@ -47,7 +47,7 @@ def main():
         # Process PDF with Gemini
         logger.progress("Sending PDF to Gemini API...")
         try:
-            processor = GeminiProcessor(api_key)
+            processor = GeminiProcessor(api_key, debug=args.debug)
             raw_response = processor.process_pdf(args.pdf_path)
         except Exception as e:
             logger.error(f"Failed to process PDF: {str(e)}")

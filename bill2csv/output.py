@@ -76,18 +76,18 @@ class OutputManager:
             
             for error in errors:
                 raw_fields = [
-                    error["raw"].get("Date", ""),
-                    error["raw"].get("Description", ""),
+                    error["raw"].get("Date") or "",
+                    error["raw"].get("Description") or "",
                 ]
                 # Include Payee if present
                 if "Payee" in error["raw"]:
-                    raw_fields.append(error["raw"].get("Payee", ""))
+                    raw_fields.append(error["raw"].get("Payee") or "")
                 
-                raw_fields.append(error["raw"].get("Amount", ""))
+                raw_fields.append(error["raw"].get("Amount") or "")
                 
                 # Include Category if present
                 if "Category" in error["raw"]:
-                    raw_fields.append(error["raw"].get("Category", ""))
+                    raw_fields.append(error["raw"].get("Category") or "")
                 raw_str = ",".join(raw_fields)
                 writer.writerow([error["row"], error["reason"], raw_str])
     

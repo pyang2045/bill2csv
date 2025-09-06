@@ -367,7 +367,7 @@ class CategoryValidator:
             ValidationError: If category is invalid
         """
         if not category_str or not category_str.strip():
-            # Category is optional, return "Other > Uncategorized" as default
+            # Category is optional, return "Other > Uncategorized" as default for empty values
             return "Other > Uncategorized"
         
         category_str = category_str.strip()
@@ -387,8 +387,9 @@ class CategoryValidator:
             if normalized.lower() == valid_cat.lower():
                 return valid_cat
         
-        # If not in valid categories, default to "Other > Uncategorized"
-        return "Other > Uncategorized"
+        # If not in valid categories, keep the original category as-is
+        # This allows for custom categories or new categories from the LLM
+        return category_str
     
     @classmethod
     def get_all_categories(cls):

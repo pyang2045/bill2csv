@@ -79,6 +79,12 @@ Examples:
     )
     
     parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode (writes LLM response to file)",
+    )
+    
+    parser.add_argument(
         "--version",
         action="version",
         version=f"%(prog)s {__version__}",

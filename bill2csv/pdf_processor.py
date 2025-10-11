@@ -48,22 +48,26 @@ Mapping rules:
 
 Normalization:
 - Date: DD-MM-YYYY (numeric day-month-year, e.g., 13-06-2018)
-- Description: clean text with spaces instead of symbols; one line; if it contains commas, quote the field
+- Description: clean text with spaces instead of symbols; one line; MUST quote with double quotes if contains commas
   * Replace symbols like *, #, @, &, /, \\, |, <, >, ~, `, ^, _, +, =, [, ], {, } with spaces
   * Keep letters, numbers, and basic punctuation (. , ; : ' " ( ))
   * Example: "WALMART#1234*STORE" becomes "WALMART 1234 STORE", "7-ELEVEN_STORE" becomes "7 ELEVEN STORE"
-- Payee: extract the merchant/vendor name from description, preserving original language
+  * If description contains comma: "國外交易手續費triplaCo.,Lt" becomes "\"國外交易手續費triplaCo.,Lt\""
+  * CRITICAL: Any field containing commas MUST be enclosed in double quotes to prevent CSV parsing errors
+- Payee: extract the merchant/vendor name from description, preserving original language; MUST quote if contains comma
   * Keep the original language/script from the description (Chinese, Japanese, etc.)
   * Remove store numbers, transaction codes, and extra details
+  * If payee contains a comma (like "Co.,Ltd."), MUST wrap in double quotes
   * Examples:
-    - "WALMART#1234*STORE" → "Walmart"
-    - "7-ELEVEN_STORE#567" → "7-Eleven"
-    - "星巴克咖啡#12345" → "星巴克咖啡"
-    - "麥當勞 STORE#567" → "麥當勞"
-    - "セブンイレブン#1234" → "セブンイレブン"
-    - "AMZ*MKTP US*2Y4T85TN2" → "Amazon Marketplace"
-    - "PAYPAL *EBAY_SELLER" → "PayPal"
-    - "TST* DOORDASH" → "DoorDash"
+    - "WALMART#1234*STORE" → Walmart
+    - "7-ELEVEN_STORE#567" → 7-Eleven
+    - "星巴克咖啡#12345" → 星巴克咖啡
+    - "麥當勞 STORE#567" → 麥當勞
+    - "セブンイレブン#1234" → セブンイレブン
+    - "AMZ*MKTP US*2Y4T85TN2" → Amazon Marketplace
+    - "PAYPAL *EBAY_SELLER" → PayPal
+    - "TST* DOORDASH" → DoorDash
+    - "triplaCo.,Ltd. Tokyo" → "triplaCo.,Ltd." (quoted because of comma)
 - Amount: signed decimal with '.' decimal separator; no thousands separators
   * Outflows/charges: NEGATIVE (e.g., -120.50)
   * Inflows/payments/credits/refunds: POSITIVE (e.g., 120.50)
@@ -77,6 +81,7 @@ Scope:
 Constraints:
 - If a field is unknown, leave it empty (no N/A).
 - Output only CSV text. No explanations, no markdown, no code fences, no extra columns.
+- CRITICAL CSV FORMAT RULE: Any field (Date, Description, Payee, Amount, Category) that contains a comma MUST be wrapped in double quotes. This includes Payee names like "triplaCo.,Ltd." which must be written as "\"triplaCo.,Ltd.\"" in the CSV.
 
 Header example:
 Date,Description,Payee,Amount,Category"""

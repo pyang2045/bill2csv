@@ -12,6 +12,7 @@ from .csv_cleaner import CSVCleaner
 from .validators import RowValidator, CategoryValidator
 from .output import OutputManager
 from .utils import ConsoleLogger, get_file_info
+from . import config
 
 
 def main():
@@ -109,7 +110,7 @@ def main():
             output_mgr.write_metadata(
                 row_count=len(valid_rows),
                 error_count=len(error_rows),
-                model="gemini-2.0-flash-exp"
+                model=processor.model_name
             )
             logger.progress(f"Metadata written to {output_mgr.meta_path.name}")
         

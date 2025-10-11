@@ -9,20 +9,22 @@ import os
 import random
 from datetime import datetime
 
+from . import config
+
 
 class GeminiProcessor:
     """Process PDF files using Gemini 2.5 Flash API"""
-    
-    # Configuration constants
-    DEFAULT_MODEL = 'gemini-2.5-flash'  # Latest stable Flash model with thinking capabilities
-    MAX_POLLING_ATTEMPTS = 60  # 30 seconds timeout (60 * 0.5s)
-    POLLING_INTERVAL = 0.5  # seconds
-    
-    # Retry configuration
-    MAX_RETRIES = 3  # Maximum number of retry attempts
-    INITIAL_RETRY_DELAY = 2  # Initial delay in seconds
-    MAX_RETRY_DELAY = 32  # Maximum delay in seconds
-    RETRY_BACKOFF_FACTOR = 2  # Exponential backoff factor
+
+    # Configuration constants from centralized config
+    DEFAULT_MODEL = config.DEFAULT_MODEL
+    MAX_POLLING_ATTEMPTS = config.MAX_POLLING_ATTEMPTS
+    POLLING_INTERVAL = config.POLLING_INTERVAL
+
+    # Retry configuration from centralized config
+    MAX_RETRIES = config.MAX_RETRIES
+    INITIAL_RETRY_DELAY = config.INITIAL_RETRY_DELAY
+    MAX_RETRY_DELAY = config.MAX_RETRY_DELAY
+    RETRY_BACKOFF_FACTOR = config.RETRY_BACKOFF_FACTOR
     
     # Cache for categories
     _categories_content = None
@@ -82,10 +84,10 @@ Date,Description,Payee,Amount,Category"""
     def __init__(self, api_key: str, model: str = None, debug: bool = False):
         """
         Initialize Gemini processor
-        
+
         Args:
             api_key: Gemini API key
-            model: Model name (defaults to gemini-2.5-flash)
+            model: Model name (defaults to value from config.DEFAULT_MODEL)
             debug: Enable debug logging
         """
         self.api_key = api_key
@@ -231,8 +233,8 @@ Date,Description,Payee,Amount,Category"""
                             pdf_file,     # Uploaded file
                         ],
                         config=types.GenerateContentConfig(
-                            temperature=0.1,
-                            max_output_tokens=32768,  # Increased from 8192 to handle larger bills
+                            temperature=config.TEMPERATURE,
+                            max_output_tokens=config.MAX_OUTPUT_TOKENS,
                             candidate_count=1,
                             safety_settings=[
                                 types.SafetySetting(

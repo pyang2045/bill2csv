@@ -7,6 +7,8 @@ from datetime import datetime
 from typing import List, Dict, Optional
 import pypdf
 
+from . import config
+
 
 class OutputManager:
     """Manages writing output files (CSV, errors, metadata)"""
@@ -91,18 +93,20 @@ class OutputManager:
                 raw_str = ",".join(raw_fields)
                 writer.writerow([error["row"], error["reason"], raw_str])
     
-    def write_metadata(self, 
-                      row_count: int, 
+    def write_metadata(self,
+                      row_count: int,
                       error_count: int,
-                      model: str = "gemini-2.5-flash") -> None:
+                      model: str = None) -> None:
         """
         Write metadata JSON file
-        
+
         Args:
             row_count: Number of valid rows
             error_count: Number of error rows
-            model: Model name used for processing
+            model: Model name used for processing (defaults to config.DEFAULT_MODEL)
         """
+        if model is None:
+            model = config.DEFAULT_MODEL
         # Get PDF page count
         try:
             with open(self.pdf_path, 'rb') as f:

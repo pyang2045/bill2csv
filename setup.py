@@ -25,7 +25,7 @@ setup(
     ],
     python_requires=">=3.9",
     install_requires=[
-        "google-generativeai>=0.3.0",
+        "google-genai>=1.52.0",
         "pypdf>=3.17.0",
     ],
     entry_points={

@@ -1,11 +1,11 @@
 """Centralized configuration for bill2csv"""
 
 # Model Configuration
-DEFAULT_MODEL = 'gemini-2.5-flash'  # Latest stable Flash model with thinking capabilities
-MODEL_DESCRIPTION = "Gemini 2.5 Flash"
+DEFAULT_MODEL = 'gemini-3-pro-preview'  # Gemini 3 Pro preview model
+MODEL_DESCRIPTION = "Gemini 3 Pro Preview"
 
 # API Configuration
-MAX_OUTPUT_TOKENS = 65536  # Maximum tokens for model output (official limit for gemini-2.5-flash)
+MAX_OUTPUT_TOKENS = 65536  # Maximum tokens for model output
 TEMPERATURE = 0.1  # Low temperature for deterministic output
 
 # Retry Configuration

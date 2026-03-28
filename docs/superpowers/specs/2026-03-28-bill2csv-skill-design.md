@@ -33,13 +33,19 @@ If ambiguous or unreadable rows are found, flag them in conversation and ask the
 
 ### Columns
 
-| Column | Description |
-|--------|-------------|
-| Date | DD-MM-YYYY format, transaction date preferred over posting date |
-| Description | Cleaned text, symbols replaced with spaces, quoted if contains commas |
-| Payee | Merchant/vendor name extracted from description, original language preserved |
-| Amount | Signed decimal — negative for charges, positive for credits/payments |
-| Category | Hierarchical with ` > ` separator from baked-in category list |
+The CSV must include a header row as the first line, followed by data rows. Column order is fixed:
+
+| # | Column | Description |
+|---|--------|-------------|
+| 1 | Date | DD-MM-YYYY format, transaction date preferred over posting date |
+| 2 | Description | Cleaned text, symbols replaced with spaces, quoted if contains commas |
+| 3 | Payee | Merchant/vendor name extracted from description, original language preserved |
+| 4 | Amount | Signed decimal — negative for charges, positive for credits/payments |
+| 5 | Category | Hierarchical with ` > ` separator from baked-in category list |
+
+Header row: `Date,Description,Payee,Amount,Category`
+
+Encoding: UTF-8 (required for CJK character support).
 
 ### Normalization Rules
 
@@ -50,9 +56,11 @@ If ambiguous or unreadable rows are found, flag them in conversation and ask the
 
 **Description:**
 - Replace symbols (`*`, `#`, `@`, `&`, `/`, `\`, `|`, `<`, `>`, `~`, `` ` ``, `^`, `_`, `+`, `=`, `[`, `]`, `{`, `}`) with spaces
+- Replace hyphens and dashes (`-`, `–`, `—`) with spaces
 - Collapse multiple spaces into one
 - Quote with double quotes if contains commas
 - Example: `WALMART#1234*STORE` becomes `WALMART 1234 STORE`
+- Example: `7-ELEVEN_STORE` becomes `7 ELEVEN STORE`
 
 **Payee:**
 - Extract clean merchant/vendor name from description
@@ -63,9 +71,11 @@ If ambiguous or unreadable rows are found, flag them in conversation and ask the
   - `星巴克咖啡#12345` -> `星巴克咖啡`
   - `AMZ*MKTP US*2Y4T85TN2` -> `Amazon Marketplace`
 - Quote if contains commas
+- If no merchant can be identified, use an empty string (`""`)
 
 **Amount:**
 - Signed decimal with `.` separator, no thousands separators
+- Always use exactly 2 decimal places (e.g., `120.00`, not `120`)
 - Charges/outflows: negative (e.g., `-120.50`)
 - Credits/payments/refunds: positive (e.g., `120.50`)
 - Remove currency symbols, handle Unicode minus signs
@@ -73,14 +83,14 @@ If ambiguous or unreadable rows are found, flag them in conversation and ask the
 **Category:**
 - Use ONLY categories from the baked-in list
 - Hierarchical format: `Main > Sub` (e.g., `Food & Dining > Restaurants`)
-- Default to `Uncategorized` if no match
+- Default to `Other > Uncategorized` if no match
 
 ### Scope Rules
 
 - Extract ALL rows from expense detail tables across ALL pages
 - Ignore dashboards, charts/graphs, summaries, totals, advertisements, cover pages
 - If multiple detail tables exist, include all (one row per transaction)
-- If no itemized rows, output one row using total due as a negative charge
+- If no itemized rows, output one row: Date = bill date, Description = bill issuer name, Payee = bill issuer, Amount = total due (negative), Category = `Other > Uncategorized`
 
 ## Output
 
@@ -100,7 +110,7 @@ After writing the CSV, display:
 
 ## Categories (Baked In)
 
-The full category hierarchy embedded in the skill:
+The full category hierarchy embedded in the skill. This is an intentionally cleaned-up version of the repo's `expense_categories.md` — duplicates removed, flat items grouped under parents. The Python CLI continues to use the original file; the skill uses this self-contained list.
 
 ```
 - Food & Dining
@@ -165,19 +175,14 @@ The full category hierarchy embedded in the skill:
   - Life Insurance
   - Home Insurance
   - Other Insurance
-- Transportation (Travel)
+- Travel
   - Flights
-  - Hotels
-  - Car Rental
-  - Local Transport
-- Accommodation
   - Hotels
   - Vacation Rentals
   - Hostels
-- Activities
-  - Tours
-  - Attractions
-  - Dining
+  - Car Rental
+  - Local Transport
+  - Tours & Attractions
 - Office
   - Supplies
   - Equipment
@@ -190,21 +195,24 @@ The full category hierarchy embedded in the skill:
   - Advertising
   - Promotions
   - Events
-- Tuition
-- Books & Supplies
-- Courses & Training
-- Student Loans
-- Salary
-- Freelance
-- Refunds
-- Credits
-- Interest
-- Dividends
-- Other Income
-- Uncategorized
-- Cash Withdrawal
-- Transfers
-- Adjustments
+- Education
+  - Tuition
+  - Books & Supplies
+  - Courses & Training
+  - Student Loans
+- Income
+  - Salary
+  - Freelance
+  - Refunds
+  - Credits
+  - Interest
+  - Dividends
+  - Other Income
+- Other
+  - Uncategorized
+  - Cash Withdrawal
+  - Transfers
+  - Adjustments
 ```
 
 ## Error Handling
@@ -213,6 +221,8 @@ The full category hierarchy embedded in the skill:
 - **Unreadable pages**: Inform user which pages couldn't be parsed
 - **No transactions found**: Tell user explicitly rather than writing empty CSV
 - **File not found**: Ask user to verify the path
+- **File already exists**: Ask user before overwriting an existing CSV file
+- **Multi-currency**: Extract amounts as-is in whatever currency appears; do not convert. Note currency in the summary if mixed currencies detected.
 
 ## Non-Goals
 

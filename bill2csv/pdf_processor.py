@@ -100,7 +100,10 @@ Date,Description,Payee,Amount,Category"""
         self.debug = debug
         
         # Initialize the client with the new SDK
-        self.client = genai.Client(api_key=api_key)
+        self.client = genai.Client(
+            api_key=api_key,
+            http_options=types.HttpOptions(timeout=config.HTTP_TIMEOUT_MS),
+        )
         
         # Load expense categories for context
         self._load_expense_categories()
@@ -411,7 +414,12 @@ Date,Description,Payee,Amount,Category"""
             
             # Provide more specific error messages
             error_msg = str(e).lower()
-            if "not found" in error_msg:
+            if "timed out" in error_msg or "timeout" in error_msg:
+                raise TimeoutError(
+                    f"API request timed out after {config.HTTP_TIMEOUT_MS // 1000} seconds. "
+                    "The PDF may be too large or the model is taking too long to respond."
+                )
+            elif "not found" in error_msg:
                 raise ValueError(f"File not found or inaccessible: {pdf_path}")
             elif "authentication" in error_msg or "api key" in error_msg:
                 raise ValueError("API authentication failed. Please check your API key.")

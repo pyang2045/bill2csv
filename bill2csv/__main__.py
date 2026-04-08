@@ -1,9 +1,19 @@
 #!/usr/bin/env python3
 """Main entry point for bill2csv command-line tool"""
 
+import logging
 import sys
+import time
+import threading
 import traceback
 from pathlib import Path
+
+from rich.console import Console
+
+# Suppress noisy SDK logging (httpx HTTP traces, genai AFC messages)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("google_genai").setLevel(logging.WARNING)
+logging.getLogger("google.genai").setLevel(logging.WARNING)
 
 from .cli import parse_args
 from .api_key import APIKeyManager
@@ -46,10 +56,38 @@ def main():
             return 1
         
         # Process PDF with Gemini
-        logger.progress("Sending PDF to Gemini API...")
+        console = Console(quiet=args.quiet)
         try:
             processor = GeminiProcessor(api_key, debug=args.debug)
-            raw_response = processor.process_pdf(args.pdf_path)
+            step_start = time.monotonic()
+            stop_event = threading.Event()
+            status_labels = {
+                "uploading": "Uploading PDF",
+                "generating": f"Waiting for {config.MODEL_DESCRIPTION}",
+            }
+            current_label = f"Sending PDF to {config.MODEL_DESCRIPTION}"
+
+            def _on_status(step):
+                nonlocal step_start, current_label
+                step_start = time.monotonic()
+                current_label = status_labels.get(step, step)
+
+            def _update_elapsed(status):
+                while not stop_event.wait(1.0):
+                    elapsed = int(time.monotonic() - step_start)
+                    status.update(
+                        f"[bold green]{current_label}...  ({elapsed}s)"
+                    )
+
+            with console.status(
+                f"[bold green]{current_label}...",
+                spinner="dots",
+            ) as status:
+                timer_thread = threading.Thread(target=_update_elapsed, args=(status,), daemon=True)
+                timer_thread.start()
+                raw_response = processor.process_pdf(args.pdf_path, on_status=_on_status)
+                stop_event.set()
+                timer_thread.join()
         except Exception as e:
             logger.error(f"Failed to process PDF: {str(e)}")
             return 1

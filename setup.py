@@ -27,6 +27,7 @@ setup(
     install_requires=[
         "google-genai>=1.70.0",
         "pypdf>=3.17.0",
+        "rich>=13.0.0",
     ],
     entry_points={
         "console_scripts": [

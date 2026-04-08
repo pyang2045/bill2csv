@@ -193,31 +193,34 @@ Date,Description,Payee,Amount,Category"""
         except Exception as e:
             print(f"Warning: Could not write debug file: {e}")
     
-    def process_pdf(self, pdf_path: str) -> str:
+    def process_pdf(self, pdf_path: str, on_status=None) -> str:
         """
         Process PDF file and extract CSV data
-        
+
         Args:
             pdf_path: Path to PDF file
-            
+            on_status: Optional callback(status_str) for progress updates
+
         Returns:
             Raw CSV response from Gemini
-            
+
         Raises:
             TimeoutError: If file processing times out
             ValueError: If file upload fails
             Exception: If API call fails
         """
         pdf_file = None
-        
+
         try:
             # Upload the PDF file using new SDK
+            if on_status:
+                on_status("uploading")
             pdf_file = self.client.files.upload(file=pdf_path)
-            
+
             # With new SDK, files are typically ready immediately after upload
             # But we can add a small delay to ensure processing
             time.sleep(1.0)
-            
+
             # Combine prompt with categories for clearer context
             full_prompt = (
                 self.PROMPT_V2 + 
@@ -234,6 +237,8 @@ Date,Description,Payee,Amount,Category"""
             
             while retry_count <= self.MAX_RETRIES:
                 try:
+                    if on_status:
+                        on_status("generating")
                     response = self.client.models.generate_content(
                         model=self.model_name,
                         contents=[

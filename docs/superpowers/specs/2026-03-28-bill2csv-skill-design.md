@@ -232,6 +232,7 @@ The full category hierarchy embedded in the skill. This is an intentionally clea
 
 ## Error Handling
 
+- **Password-protected PDF**: ask the user for the password (never guess or brute-force), decrypt locally with `scripts/unlock.py` (pypdf, falling back to qpdf; no network involved), save the copy as `<stem>.unlocked.pdf` next to the original, and continue with it. Wrong password (exit 2) → ask again.
 - **Rows failing validation**: written to `<stem>.errors.csv` (`row,reason,raw`) by the script; Claude shows them and offers to fix
 - **Ambiguous rows**: Flag in conversation, ask user how to proceed
 - **Unreadable pages**: Inform user which pages couldn't be parsed

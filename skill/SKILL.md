@@ -1,6 +1,7 @@
 ---
 name: bill2csv
 description: Use when the user wants to convert a PDF bill, credit card statement, bank statement, or invoice into CSV transaction data — e.g. "convert this bill to CSV", "extract transactions from this statement PDF", "bill2csv".
+argument-hint: <path-to-bill.pdf>
 ---
 
 # bill2csv
@@ -9,7 +10,7 @@ Convert a PDF bill to a transactions CSV. You extract and categorize; the bundle
 
 ## Workflow
 
-1. **Get the PDF path** — from the request, or ask. Verify the file exists.
+1. **Get the PDF path** — invocation argument: "$ARGUMENTS". If that is empty, take the path from the request, or ask. Verify the file exists.
 2. **If the PDF is password-protected** (reading fails with an encryption error, or `pypdf`'s `is_encrypted` is true): ask the user for the password — never guess or brute-force. Then decrypt locally: `python3 <skill-dir>/scripts/unlock.py IN.pdf <stem>.unlocked.pdf PASSWORD` (uses pypdf or qpdf on this machine; nothing leaves it). Exit 2 means wrong password — ask again. Continue the workflow with the unlocked copy, and tell the user it was saved next to the original.
 3. **Read the PDF with the Read tool.** Statements are often image-only (no text layer) — read every page visually; use `pages` ranges for PDFs over 10 pages. If a merchant name or digit is ambiguous, re-render that page at high DPI (e.g. PyMuPDF ≥300 dpi) and re-read before guessing.
 4. **Extract every row of every transaction detail table** across all pages into a raw CSV at a temp path, header exactly: `Date,Description,Payee,Amount,Category` (rules below). Include zero-amount informational rows (e.g. installment remaining-principal lines). Ignore dashboards, charts, summaries, totals, ads, cover pages. If the bill has NO itemized rows, emit one row: bill date, issuer as Description and Payee, total due as a negative Amount, `Other > Uncategorized`.

@@ -82,3 +82,4 @@ temp/
 tmp/
 # MoneyWiz exports (personal finance data)
 *moneywiz*
+categories.local.md

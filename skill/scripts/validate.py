@@ -30,15 +30,8 @@ class RowError(Exception):
     pass
 
 
-def load_categories():
-    """Parse categories.md into {lowercase name/path -> canonical 'A > B > C'}.
-
-    Supports arbitrary nesting via 2-space indentation. Each full path is a key;
-    a bare leaf name maps to its first-seen path, but a top-level name always maps
-    to itself (so e.g. a top-level '其他' wins over a nested one).
-    """
-    path = Path(__file__).resolve().parent.parent / "categories.md"
-    lookup = {}
+def _parse_categories_file(path, lookup):
+    """Parse one categories markdown file (2-space indent tree) into lookup."""
     stack = []  # canonical names by indent level
     for line in path.read_text(encoding="utf-8").splitlines():
         m = re.match(r"^(\s*)-\s+(.*\S)\s*$", line)
@@ -54,6 +47,21 @@ def load_categories():
             lookup[name.lower()] = full
         else:
             lookup.setdefault(name.lower(), full)
+
+
+def load_categories():
+    """Parse categories.md, then optional categories.local.md, into one lookup.
+
+    {lowercase name/path -> canonical 'A > B > C'}. Arbitrary nesting via 2-space
+    indentation; a bare leaf maps to its first-seen path, a top-level name to
+    itself. categories.local.md (gitignored, personal) extends the public tree.
+    """
+    base = Path(__file__).resolve().parent.parent
+    lookup = {}
+    for fname in ("categories.md", "categories.local.md"):
+        path = base / fname
+        if path.exists():
+            _parse_categories_file(path, lookup)
     return lookup
 
 

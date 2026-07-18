@@ -1,8 +1,11 @@
 # Categories
 
-English, consolidated from MoneyWiz (Chinese duplicates folded into their English
-equivalents, redundant nesting removed). Format: `Main > Sub`, using ` > ` as the
-separator in output. Adapt the `Work` subcategories to your own employers/clients.
+English, consolidated from MoneyWiz. Format: `Main > Sub`, using ` > ` as the
+separator in output.
+
+**Private additions** (personal employers/clients, etc.) live in `categories.local.md`
+in this same directory — it is gitignored and merged on top of this file at runtime.
+When choosing a category, read that file too if it exists.
 
 ## Expenses
 

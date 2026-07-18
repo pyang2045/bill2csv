@@ -2,51 +2,29 @@
 
 ## Project Overview
 
-bill2csv converts PDF bills to CSV format using Google's Gemini API. It extracts expense tables from PDFs and outputs structured CSV with Date, Description, Payee, Amount, and Category columns.
+bill2csv converts PDF bills to CSV format. It extracts expense tables from PDFs and outputs structured CSV with Date, Description, Payee, Amount, and Category columns.
 
-## Tech Stack
+**The Python/Gemini CLI is ARCHIVED (2026-07-18)** — do not extend it. The active implementation is the Claude Code skill in `skill/`, deployed to `~/.claude/skills/bill2csv/`: Claude extracts transactions from the PDF visually, and `skill/scripts/validate.py` (stdlib-only) deterministically normalizes rows, writes the CSV + `.errors.csv`, and prints a summary. Design and as-built record: `docs/superpowers/specs/2026-03-28-bill2csv-skill-design.md`.
 
-- Python 3.9+
-- Google GenAI SDK (`google-genai`)
-- pypdf for PDF handling
-- macOS Keychain for API key storage (optional)
+## Working on the Skill
 
-## Project Structure
+- Edit `skill/` and re-copy to `~/.claude/skills/bill2csv/` — keep the two in sync
+- Test end-to-end against the sample statements in the repo root (image-only PDFs with golden CSVs alongside); reconcile extracted totals against the statement's printed control totals
+- The sample PDFs/CSVs contain personal data: they are local-only, excluded via `.gitignore` (`*.pdf`, `*.csv`), and must NEVER be committed, pushed, or uploaded anywhere
+- `skill/categories.md` is the category taxonomy read by both Claude and `validate.py`
 
-- `bill2csv/` - Main package
-  - `cli.py` - CLI argument parsing and entry point
-  - `pdf_processor.py` - PDF upload and Gemini API interaction
-  - `csv_cleaner.py` - CSV parsing and cleaning
-  - `validators.py` - Data validation (dates, amounts, descriptions, payees, categories)
-  - `output.py` - File output handling
-  - `config.py` - Centralized configuration constants
-  - `api_key.py` - API key retrieval (Keychain / env var)
-  - `utils.py` - Shared utilities
-- `tests/` - Unit tests
-- `expense_categories.md` - Default category hierarchy
-- `bill2csv_spec.md` - Product specification
-- `DESIGN_DOCUMENT.md` - Technical architecture
+## Archived Python CLI (reference only)
 
-## Common Commands
-
-```bash
-# Install in development mode
-pip install -e .
-
-# Run the tool
-bill2csv <file.pdf>
-
-# Run tests
-python -m pytest tests/
-
-# Run a specific test
-python -m pytest tests/test_validators.py
-```
+- `bill2csv/` - Main package (cli.py, pdf_processor.py, csv_cleaner.py, validators.py, output.py, config.py, api_key.py, utils.py)
+- `tests/` - Unit tests (`python -m pytest tests/`)
+- `expense_categories.md` - CLI's category hierarchy (superseded by `skill/categories.md`)
+- `bill2csv_spec.md` - Original product specification
+- `DESIGN_DOCUMENT.md` - CLI technical architecture
 
 ## Key Conventions
 
-- Model config lives in `bill2csv/config.py` (currently Gemini 3 Pro Preview)
 - CSV date format: DD-MM-YYYY
+- Amounts: signed, 2 decimal places; charges negative, credits positive
 - Categories use hierarchical format with ` > ` separator (e.g., "Food & Dining > Restaurants")
 - Payee names preserve original language/script (Chinese, Japanese, etc.)
 - Invalid rows go to a separate `.errors.csv` file rather than failing

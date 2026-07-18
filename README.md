@@ -1,6 +1,13 @@
 # bill2csv
 
-Convert PDF bills to CSV format using Google's Gemini 2.5 Flash API for intelligent extraction and categorization of financial transactions.
+> **⚠️ ARCHIVED (2026-07-18).** The Python CLI below is no longer maintained. It has
+> been replaced by a Claude Code skill that needs no Gemini API key and no package
+> install — see [`skill/`](skill/) for the source and
+> [`docs/superpowers/specs/2026-03-28-bill2csv-skill-design.md`](docs/superpowers/specs/2026-03-28-bill2csv-skill-design.md)
+> for the design. To install the skill, copy `skill/` to `~/.claude/skills/bill2csv/`,
+> then ask Claude Code to "convert \<bill.pdf\> to csv".
+
+Convert PDF bills to CSV format using Google's Gemini API for intelligent extraction and categorization of financial transactions.
 
 ## Features
 

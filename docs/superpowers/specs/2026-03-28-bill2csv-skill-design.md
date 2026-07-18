@@ -1,8 +1,15 @@
 # bill2csv Skill Design
 
+> **Status: implemented 2026-07-18** as a *hybrid* skill (markdown + bundled stdlib
+> validator script), deployed at `~/.claude/skills/bill2csv/` and mirrored in
+> [`skill/`](../../../skill/) in this repo. The hybrid variant was chosen over the
+> pure-markdown design originally described here to keep the deterministic
+> formatting guarantees and `.errors.csv` isolation of the Python CLI, which this
+> skill replaces (the CLI is now archived). Sections below are updated to as-built.
+
 ## Summary
 
-A Claude Code skill that converts PDF bills to CSV format using Claude as the extraction engine. No external API dependencies (Gemini, etc.). The skill is conversational: it asks for a PDF path, reads the PDF, extracts transactions, validates data, writes a CSV file, and shows a summary.
+A Claude Code skill that converts PDF bills to CSV format using Claude as the extraction engine. No external API dependencies (Gemini, etc.). The skill is conversational: it asks for a PDF path, reads the PDF, extracts transactions, then runs a bundled Python (stdlib-only) script that validates/normalizes the rows, writes the CSV plus an `.errors.csv` for rejected rows, and prints a summary.
 
 ## Target Users
 
@@ -10,22 +17,30 @@ Other developers with Claude Code who want to convert PDF bills to CSV without s
 
 ## Approach
 
-Pure markdown skill — all extraction logic, validation rules, and category definitions are embedded in the skill instructions. Claude reads the PDF directly via the Read tool and applies the rules to produce structured CSV output.
+Hybrid skill — extraction judgment lives in markdown, formatting guarantees live in code:
+
+- **Claude** (per `SKILL.md`): reads the PDF visually (bills are often image-only, no text layer), extracts transaction rows, cleans payees, assigns categories, and reconciles totals against the statement's printed control totals.
+- **`scripts/validate.py`** (Python 3, stdlib only, ~150 lines ported from the CLI's `validators.py`): deterministically normalizes dates (6 input formats → DD-MM-YYYY) and amounts (Unicode minus, parentheses, currency symbols, thousands separators → signed 2-decimal), scrubs description symbols, resolves categories against `categories.md` (bare sub-names map to their hierarchy, unknowns → `Other > Uncategorized`), writes the UTF-8 CSV with correct quoting, isolates rejected rows into `<stem>.errors.csv` (`row,reason,raw`), and prints the summary.
 
 ## Skill Location
 
-`~/.claude/skills/bill2csv/SKILL.md`
+```
+~/.claude/skills/bill2csv/
+  SKILL.md              # workflow + extraction rules
+  categories.md         # category taxonomy (read by Claude and the script)
+  scripts/validate.py   # deterministic validation / output / summary
+```
 
-Available in any Claude Code session regardless of working directory.
+Available in any Claude Code session regardless of working directory. Source is version-controlled in this repo under `skill/`.
 
 ## Conversation Flow
 
 1. **Ask for PDF path** — prompt the user for the file path
-2. **Read PDF** — use the Read tool to read the PDF contents
-3. **Extract transactions** — Claude analyzes the bill content and extracts expense detail rows
-4. **Validate & normalize** — apply normalization rules to each row
-5. **Write CSV** — write to same directory as PDF, same basename with `.csv` extension
-6. **Show summary** — display row count, total charges, total credits, category breakdown
+2. **Read PDF** — use the Read tool to read every page visually (statements are often image-only); re-render ambiguous pages at high DPI (≥300) rather than guessing
+3. **Extract transactions** — Claude analyzes the bill content and extracts all expense detail rows (including zero-amount informational rows) to a raw temp CSV
+4. **Validate & normalize** — run `scripts/validate.py RAW.csv OUT.csv`; it writes the output CSV and `.errors.csv`, and prints the summary
+5. **Reconcile** — compare the script's charge/credit totals against the statement's printed control totals; on mismatch, re-read and fix before delivering
+6. **Show summary** — relay row count, total charges, total credits, category breakdown, rejected/remapped rows
 
 If ambiguous or unreadable rows are found, flag them in conversation and ask the user how to proceed.
 
@@ -217,6 +232,7 @@ The full category hierarchy embedded in the skill. This is an intentionally clea
 
 ## Error Handling
 
+- **Rows failing validation**: written to `<stem>.errors.csv` (`row,reason,raw`) by the script; Claude shows them and offers to fix
 - **Ambiguous rows**: Flag in conversation, ask user how to proceed
 - **Unreadable pages**: Inform user which pages couldn't be parsed
 - **No transactions found**: Tell user explicitly rather than writing empty CSV
@@ -224,10 +240,20 @@ The full category hierarchy embedded in the skill. This is an intentionally clea
 - **File already exists**: Ask user before overwriting an existing CSV file
 - **Multi-currency**: Extract amounts as-is in whatever currency appears; do not convert. Note currency in the summary if mixed currencies detected.
 
+## Verification (as implemented)
+
+Tested TDD-style against real image-only credit-card statements (kept locally
+only — statements and their golden CSVs contain personal data and are excluded
+from git via `.gitignore`): a clean-room agent following only the skill
+reproduced the golden row set produced by the Gemini pipeline, reconciled
+exactly against all three statement control totals, rejected zero rows, and
+matched the golden category distribution (1 uncategorized row). `validate.py` is additionally unit-tested against crafted
+edge cases (bad dates, `(99.50)`/`−8`/`87,792` amounts, comma-bearing CJK payees,
+unknown categories).
+
 ## Non-Goals
 
 - No metadata/meta.json generation
-- No separate errors.csv file (errors handled conversationally)
 - No Gemini/external API dependency
-- No Python package dependency
-- No custom categories file support (categories are baked in)
+- No *installed* Python package dependency (the bundled script is stdlib-only, run directly)
+- No custom categories file support (categories are baked into the skill directory)

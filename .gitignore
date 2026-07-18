@@ -80,3 +80,5 @@ run.log
 test_output/
 temp/
 tmp/
+# MoneyWiz exports (personal finance data)
+*moneywiz*

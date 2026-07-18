@@ -31,22 +31,28 @@ class RowError(Exception):
 
 
 def load_categories():
-    """Parse categories.md into {lowercase name -> canonical 'Main > Sub'}."""
+    """Parse categories.md into {lowercase name/path -> canonical 'A > B > C'}.
+
+    Supports arbitrary nesting via 2-space indentation. Each full path is a key;
+    a bare leaf name maps to its first-seen path, but a top-level name always maps
+    to itself (so e.g. a top-level '其他' wins over a nested one).
+    """
     path = Path(__file__).resolve().parent.parent / "categories.md"
     lookup = {}
-    main = None
+    stack = []  # canonical names by indent level
     for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped.startswith("- "):
-            continue
-        name = stripped[2:].strip()
-        if line.startswith("- "):  # top-level
-            main = name
-            lookup[name.lower()] = name
-        elif main:  # indented sub-item
-            full = f"{main} > {name}"
-            lookup[full.lower()] = full
-            # sub name alone resolves to its first parent
+        m = re.match(r"^(\s*)-\s+(.*\S)\s*$", line)
+        if not m:
+            continue  # skip headers and prose
+        level = len(m.group(1)) // 2
+        name = m.group(2).strip()
+        stack = stack[:level]
+        stack.append(name)
+        full = " > ".join(stack)
+        lookup[full.lower()] = full
+        if level == 0:
+            lookup[name.lower()] = full
+        else:
             lookup.setdefault(name.lower(), full)
     return lookup
 

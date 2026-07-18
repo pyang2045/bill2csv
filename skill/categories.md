@@ -1,4 +1,10 @@
-# Expense Categories
+# Categories
+
+English, consolidated from MoneyWiz (Chinese duplicates folded into their English
+equivalents, redundant nesting removed). Format: `Main > Sub`, using ` > ` as the
+separator in output. Adapt the `Work` subcategories to your own employers/clients.
+
+## Expenses
 
 - Food & Dining
   - Restaurants
@@ -6,97 +12,116 @@
   - Coffee Shops
   - Fast Food
   - Delivery & Takeout
-- Transportation
-  - Public Transit
-  - Rideshare & Taxi
-  - Gas & Fuel
-  - Parking & Tolls
-  - Vehicle Maintenance
-  - Car Insurance
+  - Other
 - Shopping
   - Clothing & Accessories
   - Electronics
   - Home & Garden
   - Books & Media
   - Gifts
-- Entertainment
-  - Movies & Shows
-  - Events & Concerts
   - Sports & Recreation
-  - Gaming
+  - Other
+- Clothing
+  - Clothes
+  - Accessories
+  - Shoes
+  - Jewelry
+  - Other
+- Digital
+  - AI
+  - Apps
   - Streaming Services
+  - Music
+  - Games
+  - Podcasts
+  - Other
+- Leisure
+  - Fitness & Sport
+  - Personal Care
+  - Events & Concerts
+  - Other
+- Transportation
+  - Public Transit
+  - Rideshare & Taxi
+  - Parking & Tolls
+  - Other
+- Automobile
+  - Gas & Fuel
+  - Maintenance
+  - Parking
+  - Car Insurance
+  - Accessories
+  - Other
+- Travel
+  - Flights
+  - Hotels
+  - Attractions & Tours
+  - Other
 - Health & Wellness
   - Medical Services
+  - Dental
+  - Eye Care
   - Pharmacy
   - Gym & Fitness
   - Personal Care
   - Health Insurance
+  - Other
 - Housing
   - Rent
   - Mortgage
-  - Property Tax
-  - HOA Fees
-- Utilities
+  - Furniture & Decor
+  - Maintenance
+  - Home Insurance
+  - Loan
+    - Interest
+    - Principal
+  - Other
+- Bills
   - Electricity
+  - Water
   - Gas
-  - Water & Sewer
-  - Internet
-  - Phone
-  - Cable & TV
-- Maintenance
-  - Repairs
-  - Cleaning Services
-  - Lawn & Garden
+  - Internet & Broadband
+  - Mobile Phone
+  - Cable TV
+  - Other
 - Banking
   - Service Fees
-  - ATM Fees
-  - Overdraft Fees
 - Credit Cards
-  - Interest Charges
   - Annual Fees
-  - Late Fees
-- Investments
-  - Brokerage Fees
-  - Advisory Fees
+  - Service Fees
 - Insurance
   - Life Insurance
-  - Home Insurance
   - Other Insurance
-- Travel
-  - Flights
-  - Hotels
-  - Vacation Rentals
-  - Hostels
-  - Car Rental
-  - Local Transport
-  - Tours & Attractions
 - Office
-  - Supplies
+  - Software
+  - Equipment
+  - Stationery
+- Work
   - Equipment
   - Software
-- Professional
-  - Legal Services
-  - Accounting
-  - Consulting
-- Marketing
-  - Advertising
-  - Promotions
-  - Events
-- Education
+  - Travel
+  - Reimbursable
+  - Other
+- Learning
   - Tuition
-  - Books & Supplies
   - Courses & Training
-  - Student Loans
-- Income
-  - Salary
-  - Freelance
-  - Refunds
-  - Credits
-  - Interest
-  - Dividends
-  - Other Income
+  - Books & Materials
+- Taxes
+- Loans
 - Other
   - Uncategorized
-  - Cash Withdrawal
   - Transfers
   - Adjustments
+  - Cash Withdrawal
+
+## Income
+
+- Income
+  - Salary & Wages
+  - Investments
+  - Rental
+  - Refunds
+  - Interest
+  - Child Support
+  - Social Security
+  - Other
